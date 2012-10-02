@@ -46,6 +46,14 @@ case class DirectedGraph[V] (vs: Set[V], es: EdgeMap[V])
     this -- (vertices flatMap doVertex)
   }
 
+  def isTree: Boolean = {
+    val hasOnlyOneParent = es forall { case (_, targets) => targets.size == 1 }
+    val isNotAForest = sinks.size <= 1
+
+    hasOnlyOneParent && isNotAForest
+  }
+
+
 }
 
 
