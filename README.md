@@ -1,2 +1,3 @@
-feature-model-synthesis
+Feature Model Synthesis
 =======================
+
