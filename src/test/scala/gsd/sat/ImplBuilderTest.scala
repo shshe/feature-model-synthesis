@@ -42,4 +42,14 @@ class ImplBuilderTest extends FunSuite {
         b.mkImplicationGraph())
   }
 
+  test("mkImplicationGraph - cutoff should ignore variables in the resulting graph") {
+    val b = new ImplBuilder(List(List(-1,2), List(-2,3), List(-3,1)),3)
+    expect(new DirectedGraph[Int](Set(1,2), List((1,2),(2,1))))(b.mkImplicationGraph(2))
+  }
+
+  test("mkImplicationGraph - ignored variables should not appear in the resulting graph") {
+    val b = new ImplBuilder(List(List(-1,2), List(-2,3), List(-3,1)),3)
+    expect(new DirectedGraph[Int](Set(2,3), List((2,3),(3,2))))(b.mkImplicationGraph(3, List(1)))
+  }
+
 }
