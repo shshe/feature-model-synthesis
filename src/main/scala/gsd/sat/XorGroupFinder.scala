@@ -1,14 +1,8 @@
 package gsd.sat
 
-
-import gsd.graph.JGraphTConversions._
-import collection.JavaConversions._
-import org.jgrapht.alg.BronKerboschCliqueFinder
 import gsd.graph.{Tree, UndirectedGraph}
 
-class XorGroupFinder(cnf: CNF,
-                     size: Int,
-                     val mutexGraph: UndirectedGraph[Int]) extends SATBuilder(cnf, size) {
+object XorGroupFinder {
 
   /**
    * @param mutexGroups assumes groups are consistent with the hierarchy.
@@ -17,8 +11,12 @@ class XorGroupFinder(cnf: CNF,
    *
    * @return a set of xor groups where each group contains a set of members.
    */
-  def findXorGroups(hierarchy: Tree[Int],
-                    mutexGroups: Set[Set[Int]]): Set[Set[Int]] =
+  def findXorGroups(cnf: CNF,
+                    size: Int,
+                    hierarchy: Tree[Int],
+                    mutexGroups: Set[Set[Int]]): Set[Set[Int]] = {
+    val solver = new SATBuilder(cnf, size)
+
     mutexGroups filter { group: Set[Int] =>
       val parents = (group flatMap { member => hierarchy.edges(member) }).toList
       assume(parents.size <= 1)
@@ -27,11 +25,12 @@ class XorGroupFinder(cnf: CNF,
       //   the parent is present and the members are not
       parents match {
         case parent::Nil =>
-          !isSatisfiable((group map (-_)) + parent)
+          !solver.isSatisfiable((group map (-_)) + parent)
         case Nil =>
-          !isSatisfiable(group map (-_))
+          !solver.isSatisfiable(group map (-_))
       }
     }
+  }
 
 }
 

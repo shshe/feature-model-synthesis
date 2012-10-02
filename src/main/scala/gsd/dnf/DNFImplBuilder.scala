@@ -1,5 +1,7 @@
 package gsd.dnf
 
+import gsd.graph.DirectedGraph
+
 class DNFImplBuilder(val dnf: DNF, val size: Int) {
 
   lazy val implications: Map[Int, Set[Int]] = {
@@ -17,5 +19,9 @@ class DNFImplBuilder(val dnf: DNF, val size: Int) {
       case Some(set) => set contains v2
       case None => false
     }
+
+  // TODO create an interface
+  def mkImplicationGraph(cutoff: Int = size, ignore: Iterable[Int] = Nil): DirectedGraph[Int] =
+    new DirectedGraph[Int]((1 to cutoff).toSet -- ignore, implications)
 
 }
