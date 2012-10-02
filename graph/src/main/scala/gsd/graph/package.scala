@@ -45,12 +45,8 @@ package object graph {
    * Creates a multi map from a collection of edges.
    * Used to create a directed graph.
    */
-  def toMultiMap[T](ts: Iterable[Edge[T]]): EdgeMap[T] = {
-    val edgeMap = new collection.mutable.HashMap[T,Set[T]]
-    for ((s,t) <- ts)
-      edgeMap.put(s, edgeMap.getOrElse(s, Set[T]()) + t)
-    edgeMap.toMap
-  }
+  def toMultiMap[T](ts: Iterable[Edge[T]]): EdgeMap[T] =
+    ts groupBy (_._1) mapValues (_ map  (_._2) toSet)
 
   /**
    * Orders an edge Edge(x,y) such that x < y and calls toMultiMap on it.
@@ -60,5 +56,12 @@ package object graph {
       case (x,y) if x < y => (x,y)
       case (x,y) => (y,x)
     }).toSet)
+
+  def asTuples[T](edges : Map[T,Set[T]]) =
+    edges.flatMap {
+      case (src,tars) => tars.map {
+        t => (src, t)
+      }
+    }
 
 }

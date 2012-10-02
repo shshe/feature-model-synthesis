@@ -11,3 +11,4 @@ resolvers += "Local Maven Repository" at Path.userHome.asURL + "/.m2/repository"
 // only show 10 lines of stack traces
 traceLevel in run := 10
 
+scalacOptions := Seq("-deprecation", "-unchecked")

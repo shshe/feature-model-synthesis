@@ -1,5 +1,8 @@
 package gsd.graph
 
+/**
+ * Constructs a parsable string.  Use GraphParser to read the graph output.
+ */
 trait GraphWriter[V] {
   this: Graph[V] =>
 
@@ -30,8 +33,6 @@ trait GraphWriter[V] {
       }
     }
 
-    sb toString
+    sb.toString()
   }
-
 }
-
