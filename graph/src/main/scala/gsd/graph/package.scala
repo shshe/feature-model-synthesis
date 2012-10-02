@@ -48,8 +48,17 @@ package object graph {
   def toMultiMap[T](ts: Iterable[Edge[T]]): EdgeMap[T] = {
     val edgeMap = new collection.mutable.HashMap[T,Set[T]]
     for ((s,t) <- ts)
-      edgeMap.put(s, edgeMap.getOrElse(s, Set()) + t)
+      edgeMap.put(s, edgeMap.getOrElse(s, Set[T]()) + t)
     edgeMap.toMap
   }
+
+  /**
+   * Orders an edge Edge(x,y) such that x < y and calls toMultiMap on it.
+   */
+  def toUndirectedMultiMap[T <% Ordered[T]](ts: Iterable[Edge[T]]): EdgeMap[T] =
+    toMultiMap((ts map {
+      case (x,y) if x < y => (x,y)
+      case (x,y) => (y,x)
+    }).toSet)
 
 }

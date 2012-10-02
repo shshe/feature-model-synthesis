@@ -91,74 +91,19 @@ case class DirectedGraph[V] protected (vs: Set[V], es: EdgeMap[V])
 
 }
 
-trait GraphWriter[V] {
-  this: Graph[V] =>
+case class UndirectedGraph[V <% Ordered[V]] protected (vs: Set[V], es: EdgeMap[V])
+  extends Graph[V](vs, es) {
 
-  def mkParseString(edgeSep: String)
-                      (implicit toOrdered: V => Ordered[V]): String = {
+  type This = UndirectedGraph[V]
 
-    val sb = new StringBuilder
+  def this(vs: Set[V], es: Iterable[Edge[V]]) =
+    this(vs, toUndirectedMultiMap(es))
 
-    val fmap = Map() ++ (vertices.zipWithIndex map { case (f,i) => (f, i+1) })
+  def New(newVs: Set[V], newEs: EdgeMap[V]) =
+    new UndirectedGraph(newVs,newEs)
 
-    for ((id, v) <- fmap.iterator.toList sortWith { case ((_,i),(_,j)) => i < j })
-      sb append v append ": " append id append ";\n"
-
-    var len = 0
-    for {
-      (src, targets) <- edges.toList sortWith { case ((x,_),(y,_)) => x < y }
-      tar <- targets.toList sortWith { _ < _ }
-    } {
-      val prev = sb.length
-      sb append fmap(src) append edgeSep append fmap(tar) append ";"
-      val curr = sb.length
-
-      len += curr - prev
-
-      if (len > 80) {
-        len = 0
-        sb append "\n"
-      }
-    }
-    
-    sb toString
-  }
-  
+  def toParseString(implicit toOrdered: V => Ordered[V]) =
+    mkParseString("--")(toOrdered)
 }
-
-trait Graphviz[T] {
-  this: Graph[T] =>
-
-  def toGraphvizString(params: GraphvizParams = GraphvizParams()): String = {
-  
-    val sb = new StringBuilder
-
-    //Header
-    sb append "digraph {\n"
-    sb append "graph [ rankdir=%s ];\n".format(params.rankDir)
-    sb append "node [ shape=%s ];\n".format(params.shape)
-
-    val fmap = Map() ++ (vertices.zipWithIndex map { case (f,i) => (f, i+1) })
-
-    //Vertices
-    for ((id, v) <- fmap.iterator.toList sortWith
-            { case ((_,i),(_,j)) => i.toString < j.toString })
-      sb append """%d [label="%s"]""".format(v, id.toString replace ("\"", "\\\"")) append "\n"
-
-    for {
-      (src, targets) <- edges.toList sortWith { case ((x,_),(y,_)) => x.toString < y.toString }
-      tar <- targets.toList sortWith { _.toString < _.toString }
-    } {
-      sb append fmap(src) append "->" append fmap(tar) append "\n"
-    }
-
-    sb append "}"
-
-    sb.toString()
-  }
-}
-
-case class GraphvizParams(rankDir: String = "TB",
-                          shape: String = "box")
 
 
