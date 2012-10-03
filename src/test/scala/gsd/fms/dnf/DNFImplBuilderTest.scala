@@ -1,4 +1,4 @@
-package gsd.dnf
+package gsd.fms.dnf
 
 import org.scalatest.FunSuite
 

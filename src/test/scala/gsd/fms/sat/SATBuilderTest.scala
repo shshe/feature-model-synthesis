@@ -1,4 +1,4 @@
-package gsd.sat
+package gsd.fms.sat
 
 import org.scalatest.FunSuite
 import org.sat4j.specs.ContradictionException
