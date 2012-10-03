@@ -8,10 +8,12 @@ class DNFImplBuilderTest extends FunSuite {
     new DNFImplBuilder(List(),1)
   }
 
-  test ("implication is found") {
+  test ("implication is found (1)") {
     val b1 = new DNFImplBuilder(List(List(-1,2)),2)
     assert(b1.implication(1,2))
+  }
 
+  test ("implication is found (2)") {
     val b2 = new DNFImplBuilder(List(List(-1,2), List(-1,2,3)),3)
     assert(b2.implication(1,2))
   }
