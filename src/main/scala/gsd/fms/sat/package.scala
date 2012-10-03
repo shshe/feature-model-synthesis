@@ -1,4 +1,4 @@
-package gsd
+package gsd.fms
 
 package object sat {
 

@@ -1,4 +1,4 @@
-package gsd.sat
+package gsd.fms.sat
 
 protected trait DoneArray {
 

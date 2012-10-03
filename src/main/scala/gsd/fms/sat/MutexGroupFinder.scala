@@ -1,4 +1,4 @@
-package gsd.sat
+package gsd.fms.sat
 
 import gsd.graph.UndirectedGraph
 import gsd.graph.JGraphTConversions._

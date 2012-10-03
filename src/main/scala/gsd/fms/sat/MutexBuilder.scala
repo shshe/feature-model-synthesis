@@ -1,4 +1,4 @@
-package gsd.sat
+package gsd.fms.sat
 
 import org.sat4j.minisat.SolverFactory
 import org.sat4j.minisat.orders.PositiveLiteralSelectionStrategy

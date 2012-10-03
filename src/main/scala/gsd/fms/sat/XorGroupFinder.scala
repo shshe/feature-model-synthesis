@@ -1,4 +1,4 @@
-package gsd.sat
+package gsd.fms.sat
 
 import gsd.graph.{Tree, UndirectedGraph}
 
