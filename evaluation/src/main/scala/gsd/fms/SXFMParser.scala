@@ -7,8 +7,8 @@ object SXFMParser {
   protected[fms] def countLeadingTabs(line: String): Int =
     line.dropWhile(_ == ' ').takeWhile(_ == '\t').length
 
-  val featurePattern = """\s*:(o|m|r)?\s+(\w+)(?:\s+\((\w+)\))?""".r
-  val groupPattern = """\s*:g\s+\[(\d),\s*([\d*])\]""".r
+  val featurePattern = """:(o|m|r)?\s+([^(]+)(?:\((\w+)\))?""".r
+  val groupPattern = """:g\s+(?:\((\w+)\)\s+)?\[(\d),\s*([\d*])\]""".r
 
   // TODO constraints
   def parseXML(elem: Elem) = {
@@ -48,22 +48,23 @@ object SXFMParser {
             if (countLeadingTabs(lines.head) < currLevel) Nil
             else x
 
-          s match {
+          s.trim match {
             case featurePattern("o", name, id) =>
-              OptNode(if (id == null) name else id, name, children.toList) :: siblings
+              OptNode(if (id == null) name.trim else id, name.trim, children.toList) :: siblings
             case featurePattern("m", name, id) =>
-              MandNode(if (id == null) name else id, name, children.toList) :: siblings
+              MandNode(if (id == null) name.trim else id, name.trim, children.toList) :: siblings
             case featurePattern("r", name, id) =>
-              RootNode(if (id == null) name else id, name, children.toList) :: siblings
+              RootNode(if (id == null) name.trim else id, name.trim, children.toList) :: siblings
 
             // Feature group members
             case featurePattern(null, name, id) =>
-              OptNode(id, name, children.toList) :: siblings
+              OptNode(if (id == null) name.trim else id, name.trim, children.toList) :: siblings
 
-            case groupPattern(minCard, "*") =>
+            // Ignore the id
+            case groupPattern(_,minCard, "*") =>
               val members = children collect {case n:OptNode => n }
               GroupNode(minCard.toInt, None, members.toList) :: siblings
-            case groupPattern(minCard, maxCard) =>
+            case groupPattern(_,minCard, maxCard) =>
               val members = children collect {case n:OptNode => n }
               GroupNode(minCard.toInt, Some(maxCard.toInt), members.toList) :: siblings
           }

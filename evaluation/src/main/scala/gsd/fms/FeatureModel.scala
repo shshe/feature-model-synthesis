@@ -11,4 +11,7 @@ case class FeatureModel(root: RootNode, constraints: List[Constraint]) {
     constraints foreach println
   }
 }
-case class Constraint(id: String,  expr: Expr)
+case class Constraint(id: String,  expr: Expr) {
+  override def toString =
+    id + ": " + expr.toString
+}

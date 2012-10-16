@@ -1,11 +1,14 @@
 package gsd.fms
 
 import org.scalatest.FunSuite
+import java.io.File
 
 class SXFMParserTest extends FunSuite {
 
   import SXFMParser._
-  
+
+  implicit def toId(s: String) = Id(s)
+
   test("Count Leading Tabs") {
     expect(0)(countLeadingTabs(""))
     expect(1)(countLeadingTabs("\t"))
@@ -14,10 +17,9 @@ class SXFMParserTest extends FunSuite {
     expect(3)(countLeadingTabs("\t\t\tSomething Here\t"))
     expect(3)(countLeadingTabs("        \t\t\t"))
   }
-  
-  
+
   test("Basic SXFM input") {
-    val out = parseXML {
+    val result = parseXML {
      <feature_model>
       <meta>
         <data name="creator">Steven She</data>
@@ -43,7 +45,39 @@ class SXFMParserTest extends FunSuite {
      </feature_model>
     }
 
-    out.print
+    val expectedTree =
+      RootNode("root", "root",List(
+        OptNode("o1", "o1", List()),
+        MandNode("m1", "m1", List(
+          GroupNode(1, None, List(
+            OptNode("a", "a", List()),
+            OptNode("b", "b", List(
+              OptNode("b1", "b1", List())
+            ))
+         ))
+        )),
+        OptNode("o2", "o2", List(
+          MandNode("m2", "m2", List())
+        ))
+      ))
+
+    val expectedConstraints =
+      List(Constraint("c1", !"o2" | "b" ))
+
+    result.root.printTree()
+
+    expect(expectedTree)(result.root)
+    expect(expectedConstraints)(result.constraints)
   }
   
+  test("eshop.sxfm.xml") {
+    val filename =
+      new File(getClass.getResource("../../eshop.sxfm.xml").toURI).getCanonicalPath
+
+    val result = parseFile(filename)
+    result.root.printTree()
+
+    result.constraints foreach println
+  }
+
 }
