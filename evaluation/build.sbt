@@ -14,5 +14,6 @@ traceLevel in run := 10
 scalacOptions := Seq("-deprecation", "-unchecked")
 
 libraryDependencies ++= Seq(
-    "org.scalatest" %% "scalatest" % "1.6.1" % "test"
+    "org.scalatest" %% "scalatest" % "1.6.1" % "test",
+    "com.googlecode.kiama" %% "kiama" % "1.2.0"
 )

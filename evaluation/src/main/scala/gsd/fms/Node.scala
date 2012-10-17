@@ -23,22 +23,22 @@ abstract class Node(val children: List[Node]) {
   }
   
 }
-abstract class NamedNode(id: String,
-                         name: String,
+abstract class NamedNode(val id: String,
+                         val name: String,
                          children: List[Node]) extends Node(children)
 
-case class RootNode(private val id: String,
-                    private val name: String,
+case class RootNode(override val id: String,
+                    override val name: String,
                     private val cs: List[Node])
   extends NamedNode(id, name, cs)
 
-case class OptNode(private val id: String,
-                   private val name: String,
+case class OptNode(override val id: String,
+                   override val name: String,
                    private val cs: List[Node])
   extends NamedNode(id, name, cs)
 
-case class MandNode(private val id: String,
-                    private val name: String,
+case class MandNode(override val id: String,
+                    override val name: String,
                     private val cs: List[Node])
   extends NamedNode(id, name, cs)
 

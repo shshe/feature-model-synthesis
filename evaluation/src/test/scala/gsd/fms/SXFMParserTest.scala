@@ -64,8 +64,6 @@ class SXFMParserTest extends FunSuite {
     val expectedConstraints =
       List(Constraint("c1", !"o2" | "b" ))
 
-    result.root.printTree()
-
     expect(expectedTree)(result.root)
     expect(expectedConstraints)(result.constraints)
   }
@@ -74,10 +72,7 @@ class SXFMParserTest extends FunSuite {
     val filename =
       new File(getClass.getResource("../../eshop.sxfm.xml").toURI).getCanonicalPath
 
-    val result = parseFile(filename)
-    result.root.printTree()
-
-    result.constraints foreach println
+    parseFile(filename)
   }
 
 }
