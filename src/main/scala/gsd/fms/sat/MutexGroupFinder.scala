@@ -19,8 +19,9 @@ object MutexGroupFinder {
 
   def findMutexGroups(mutexGraph: UndirectedGraph[Int],
                       siblingGroups: Set[Set[Int]]): Set[Set[Int]] =
-    (siblingGroups flatMap { siblings =>
-      findMaximalCliques(mutexGraph.subGraph(siblings))
+    (siblingGroups flatMap {
+      siblings =>
+        findMaximalCliques(mutexGraph.subGraph(siblings))
     })
 }
 

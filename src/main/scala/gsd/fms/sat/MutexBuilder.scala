@@ -13,7 +13,7 @@ trait MutexBuilder extends SATBuilder with DoneArray {
   }
 
   lazy val DISPROVER_ATTEMPTS: Int = size
-  lazy val DISPROVER_LOTSIZE: Int  = size / 100
+  lazy val DISPROVER_LOTSIZE: Int = size / 100
 
   val rand = new scala.util.Random
 
@@ -24,7 +24,7 @@ trait MutexBuilder extends SATBuilder with DoneArray {
 
   /**
    * TODO Set a time-out.
-   *  @param done A (vars + 1) x (vars + 1) array indicating whether the mutex
+   * @param done A (vars + 1) x (vars + 1) array indicating whether the mutex
    *              has been tested.
    */
   def randomDisprover(cutoff: Int,
@@ -33,7 +33,9 @@ trait MutexBuilder extends SATBuilder with DoneArray {
                       attempts: Int = DISPROVER_ATTEMPTS) = {
 
     def mkRandomizedLot: Set[Int] =
-      ((0 until lotSize).map { _ => rand.nextInt(cutoff) + 1 }).toSet
+      ((0 until lotSize).map {
+        _ => rand.nextInt(cutoff) + 1
+      }).toSet
 
     for (i <- 0 until attempts) {
       Console.print("MG: randomized disprover: %d / %d\r".format((i + 1), attempts))
@@ -60,10 +62,10 @@ trait MutexBuilder extends SATBuilder with DoneArray {
     val mutexes = new collection.mutable.ListBuffer[(Int, Int)]
 
     for {
-      i <- 1   to cutoff
-      j <- i+1 to cutoff if !done(i)(j)
+      i <- 1 to cutoff
+      j <- i + 1 to cutoff if !done(i)(j)
     } {
-      if (mutex(i,j)) {
+      if (mutex(i, j)) {
         mutexes += ((i, j))
         done(i)(j) = true
         done(j)(i) = true

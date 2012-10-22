@@ -17,18 +17,21 @@ object XorGroupFinder {
                     mutexGroups: Set[Set[Int]]): Set[Set[Int]] = {
     val solver = new SATBuilder(cnf, size)
 
-    mutexGroups filter { group: Set[Int] =>
-      val parents = (group flatMap { member => hierarchy.edges(member) }).toList
-      assume(parents.size <= 1)
+    mutexGroups filter {
+      group: Set[Int] =>
+        val parents = (group flatMap {
+          member => hierarchy.edges(member)
+        }).toList
+        assume(parents.size <= 1)
 
-      // An xor-group is present if the following is unsat:
-      //   the parent is present and the members are not
-      parents match {
-        case parent::Nil =>
-          !solver.isSatisfiable((group map (-_)) + parent)
-        case Nil =>
-          !solver.isSatisfiable(group map (-_))
-      }
+        // An xor-group is present if the following is unsat:
+        //   the parent is present and the members are not
+        parents match {
+          case parent :: Nil =>
+            !solver.isSatisfiable((group map (-_)) + parent)
+          case Nil =>
+            !solver.isSatisfiable(group map (-_))
+        }
     }
   }
 

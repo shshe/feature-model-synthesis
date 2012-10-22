@@ -10,7 +10,7 @@ import org.sat4j.specs.{ContradictionException, IConstr, ISolver}
  * calling certain stateful operations (i.e. like model) on the SAT solver.
  *
  * @author Steven She (shshe@gsd.uwaterloo.ca)
- * 
+ *
  * @param size the max variable in the CNF formula such that variables
  *             [1 .. size] are variables in the SAT solver.
  * @throws ContradictionException if a trivial contradiction is detected
@@ -18,7 +18,7 @@ import org.sat4j.specs.{ContradictionException, IConstr, ISolver}
  */
 @throws(classOf[ContradictionException])
 class SATBuilder(val cnf: CNF, val size: Int) {
-  
+
   import SATBuilder._
 
   var debug = false
@@ -45,7 +45,7 @@ class SATBuilder(val cnf: CNF, val size: Int) {
 
     try {
       //FIXME workaround for free variables not appearing in models
-      for (i <- 1 to size) addClause(List(i, -i))
+      for (i <- 1 to size) addClause(Set(i, -i))
       cnf foreach addClause
     }
     catch {
@@ -70,5 +70,5 @@ object SATBuilder {
    */
   def toVecInt(lits: Iterable[Int]): VecInt =
     new VecInt(lits.toArray)
-  
+
 }

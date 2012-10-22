@@ -38,23 +38,23 @@ trait ImplBuilder extends SATBuilder with DoneArray {
 
     // For debugging
     val numTotal = if (debug) {
-        var count = 0
+      var count = 0
 
-        for {
-          i <- 1 to cutoff
-          j <- 1 to cutoff if !done(i)(j)
-        } count += 1
+      for {
+        i <- 1 to cutoff
+        j <- 1 to cutoff if !done(i)(j)
+      } count += 1
 
-        count
+      count
     } else -1
 
-    val result = new collection.mutable.ListBuffer[(Int,Int)]
+    val result = new collection.mutable.ListBuffer[(Int, Int)]
 
     for (i <- 1 to cutoff) {
       var numDone = 0
 
       for (j <- 1 to cutoff if !done(i)(j)) {
-        if (implication(i,j)) {
+        if (implication(i, j)) {
           result += ((i, j))
 
           done(i)(j) = true
