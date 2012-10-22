@@ -9,7 +9,7 @@ scalaVersion := "2.9.1"
 libraryDependencies ++= Seq(
     "org.scalatest" %% "scalatest" % "1.6.1" % "test",
     "com.googlecode.kiama" %% "kiama" % "1.2.0",
-    "org.sat4j" % "org.sat4j.core" % "2.1.1"
+    "org.sat4j" % "org.sat4j.core" % "2.3.1"
 )
 
 resolvers += "Local Maven Repository" at Path.userHome.asURL + "/.m2/repository"

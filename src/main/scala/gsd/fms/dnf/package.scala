@@ -2,7 +2,7 @@ package gsd.fms
 
 package object dnf {
 
-  type Term = List[Int]
+  type Term = Set[Int]
   type DNF = Iterable[Term]
 
 }

@@ -9,7 +9,7 @@ object PIGAdapter {
 
   def orGroups(cnf: CNF, parent: Int, members: Set[Int]): Set[Set[Int]] = {
     val eliminate = cnf.vars -- members - parent
-    val set = setAsJavaSet(eliminate map (x => x:java.lang.Integer))
+    val set = setAsJavaSet(eliminate map (x => x :java.lang.Integer))
     (cnf.eliminateVariables(set).getOrGroups(parent) map {
       s => s map (_.toInt)
     }).toSet
