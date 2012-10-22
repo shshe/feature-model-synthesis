@@ -4,28 +4,29 @@ import org.kiama.rewriting.Rewriter._
 import gsd.fms.sat._
 
 object CNFConverter {
-  
+
   val sDistributeRule: Strategy = oncetd {
     rule {
-      case Or(And(x,y),z) => And(Or(x,z), Or(y,z))
-      case Or(x,And(y,z)) => And(Or(x,y), Or(x,z))
+      case Or(And(x, y), z) => And(Or(x, z), Or(y, z))
+      case Or(x, And(y, z)) => And(Or(x, y), Or(x, z))
     }
   }
 
   val sIffRule = everywheretd {
     rule {
-      case Biimp(x,y) => (!x | y) & (!y | x) }
+      case Biimp(x, y) => (!x | y) & (!y | x)
+    }
   }
 
   val sImpliesRule = everywheretd {
     rule {
-      case Imp(x,y) => !x | y
+      case Imp(x, y) => !x | y
     }
   }
 
   def splitConjunctions(in: Expr): List[Expr] = in match {
-      case And(x,y) => splitConjunctions(x) ::: splitConjunctions(y)
-      case e => List(e)
+    case And(x, y) => splitConjunctions(x) ::: splitConjunctions(y)
+    case e => List(e)
   }
 
   /**
@@ -48,8 +49,8 @@ object CNFConverter {
   }
 
   def toCNF(idMap: Map[String, Int])(e: Expr) =
-    splitConjunctions(rewrite(sIffRule <* sImpliesRule)(e)) flatMap 
-      (distribute(_)) map 
+    splitConjunctions(rewrite(sIffRule <* sImpliesRule)(e)) flatMap
+      (distribute(_)) map
       toClause(idMap)
-  
+
 }

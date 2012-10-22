@@ -5,24 +5,25 @@ abstract class Node(val children: List[Node]) {
     def p(level: Int)(n: Node) {
       (0 until level).foreach(_ => print("  "))
       n match {
-        case RootNode(id,name,_) =>
+        case RootNode(id, name, _) =>
           print("r: %s (%s)".format(id, name))
-        case OptNode(id,name,_) =>
+        case OptNode(id, name, _) =>
           print("o: %s (%s)".format(id, name))
-        case MandNode(id,name,_) =>
+        case MandNode(id, name, _) =>
           print("m: %s (%s)".format(id, name))
-        case GroupNode(min,None,_) =>
+        case GroupNode(min, None, _) =>
           print("g: [%d,%s]".format(min, "*"))
-        case GroupNode(min,Some(max),_) =>
+        case GroupNode(min, Some(max), _) =>
           print("g: [%d,%d]".format(min, max))
       }
       println()
-      n.children foreach p(level+1)
+      n.children foreach p(level + 1)
     }
     p(0)(this)
   }
-  
+
 }
+
 abstract class NamedNode(val id: String,
                          val name: String,
                          children: List[Node]) extends Node(children)

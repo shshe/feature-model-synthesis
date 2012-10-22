@@ -3,7 +3,7 @@ package gsd.fms
 import org.scalatest.FunSuite
 
 class ExprTest extends FunSuite {
-  
+
   implicit def toId(s: String) = Id(s)
 
   test("precedence") {
@@ -11,5 +11,5 @@ class ExprTest extends FunSuite {
     println("a" & "b" & "c" & "d")
     println("a" & ("b" | "c"))
   }
-  
+
 }

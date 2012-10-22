@@ -2,7 +2,7 @@ package gsd.fms
 
 import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
-import java.io.File
+import java.io.{FileFilter, File}
 
 class CNFSemanticsTest extends FunSuite with ShouldMatchers {
   test("Optional features") {
@@ -16,8 +16,8 @@ class CNFSemanticsTest extends FunSuite with ShouldMatchers {
     val cnf = CNFSemantics.mkCNF(fm)
 
     cnf should have size 2
-    cnf should contain (Set(-2, 1))
-    cnf should contain (Set(-3, 1))
+    cnf should contain(Set(-2, 1))
+    cnf should contain(Set(-3, 1))
   }
 
   test("Mandatory feature") {
@@ -30,8 +30,8 @@ class CNFSemanticsTest extends FunSuite with ShouldMatchers {
     val cnf = CNFSemantics.mkCNF(fm)
 
     cnf should have size 2
-    cnf should contain (Set(-2, 1))
-    cnf should contain (Set(-1, 2))
+    cnf should contain(Set(-2, 1))
+    cnf should contain(Set(-1, 2))
   }
 
   test("OR-group") {
@@ -48,10 +48,10 @@ class CNFSemanticsTest extends FunSuite with ShouldMatchers {
     )
     val cnf = CNFSemantics.mkCNF(fm)
 
-    cnf should contain (Set(-2, 1))
-    cnf should contain (Set(-3, 2))
-    cnf should contain (Set(-4, 2))
-    cnf should contain (Set(-2, 3, 4))
+    cnf should contain(Set(-2, 1))
+    cnf should contain(Set(-3, 2))
+    cnf should contain(Set(-4, 2))
+    cnf should contain(Set(-2, 3, 4))
   }
 
   test("XOR-group") {
@@ -69,12 +69,12 @@ class CNFSemanticsTest extends FunSuite with ShouldMatchers {
     )
     val cnf = CNFSemantics.mkCNF(fm)
 
-    cnf should contain (Set(-2, 3, 4, 5))
-    cnf should contain (Set(-3, -4))
-    cnf should contain (Set(-4, -5))
-    cnf should contain (Set(-5, -3))
+    cnf should contain(Set(-2, 3, 4, 5))
+    cnf should contain(Set(-3, -4))
+    cnf should contain(Set(-4, -5))
+    cnf should contain(Set(-5, -3))
   }
-  
+
   test("Cross-tree constraints") {
     val fm = FeatureModel(
       RootNode("r", "r", List(
@@ -90,17 +90,23 @@ class CNFSemanticsTest extends FunSuite with ShouldMatchers {
 
     val cnf = CNFSemantics.mkCNF(fm)
 
-    cnf should contain (Set(-2, 3))
-    cnf should contain (Set(-3, 4))
+    cnf should contain(Set(-2, 3))
+    cnf should contain(Set(-3, 4))
   }
 
-  test("eshop.sxfm.xml") {
-    val filename =
-      new File(getClass.getResource("../../eshop.sxfm.xml").toURI).getCanonicalPath
+  {
+    // Parse and create CNF for splot models
+    val dir = new File(getClass.getResource("../../").toURI)
+    val models = dir.listFiles(new FileFilter() {
+      def accept(f: File) = f.getName endsWith ("sxfm.xml")
+    })
 
-    val fm = SXFMParser.parseFile(filename)
-    val cnf = CNFSemantics.mkCNF(fm)
-    cnf foreach println
+    for (model <- models) {
+      test("SPLOT model: %s".format(model.getName)) {
+        val fm = SXFMParser.parseFile(model.getCanonicalPath)
+        CNFSemantics.mkCNF(fm)
+      }
+    }
   }
 
 }

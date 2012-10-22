@@ -17,20 +17,20 @@ object SXFMParser {
     val constraints = elem \\ "constraints"
 
     FeatureModel(parseFeatureTree(featureTree.text),
-                 parseConstraints(constraints.text))
+      parseConstraints(constraints.text))
   }
-  
+
   def parseConstraints(text: String) = {
     val lines = io.Source.fromString(text).getLines()
 
     (lines filterNot (_.trim == "") map
       ConstraintParser.parseConstraint).toList
   }
-  
+
   def parseFeatureTree(text: String) = {
     // Buffered iterator for peek (i.e. head)
     val lines = io.Source.fromString(text).getLines().buffered
-    
+
     def x: List[Node] =
       if (!lines.hasNext) Nil
       else {
@@ -43,7 +43,7 @@ object SXFMParser {
           val children = new collection.mutable.ListBuffer[Node]
           while (lines.hasNext && countLeadingTabs(lines.head) > currLevel)
             children ++= x
-          
+
           val siblings =
             if (countLeadingTabs(lines.head) < currLevel) Nil
             else x
@@ -61,11 +61,15 @@ object SXFMParser {
               OptNode(if (id == null) name.trim else id, name.trim, children.toList) :: siblings
 
             // Ignore the id
-            case groupPattern(_,minCard, "*") =>
-              val members = children collect {case n:OptNode => n }
+            case groupPattern(_, minCard, "*") =>
+              val members = children collect {
+                case n: OptNode => n
+              }
               GroupNode(minCard.toInt, None, members.toList) :: siblings
-            case groupPattern(_,minCard, maxCard) =>
-              val members = children collect {case n:OptNode => n }
+            case groupPattern(_, minCard, maxCard) =>
+              val members = children collect {
+                case n: OptNode => n
+              }
               GroupNode(minCard.toInt, Some(maxCard.toInt), members.toList) :: siblings
           }
         }
@@ -76,7 +80,7 @@ object SXFMParser {
     result.head.asInstanceOf[RootNode]
   }
 
-  def parseFile(fileName: String) = 
+  def parseFile(fileName: String) =
     parseXML(XML.loadFile(fileName))
 
 }
