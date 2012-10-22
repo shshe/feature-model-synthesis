@@ -2,6 +2,8 @@ package gsd.fms.sat
 
 import org.scalatest.FunSuite
 
+import CNFBuilder._
+
 class MutexBuilderTest extends FunSuite {
 
   test("empty builder is initialized") {
