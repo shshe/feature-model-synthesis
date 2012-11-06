@@ -65,17 +65,14 @@ class SXFMParserTest extends FunSuite {
   }
 
   // Try and parse every model under src/test/resources/
-  test("SPLOT models") {
-    val dir = new File(getClass.getResource("../../").toURI)
-    val models = dir.listFiles(new FileFilter() {
-      def accept(f: File) = f.getName endsWith ("sxfm.xml")
-    })
+  val dir = new File(getClass.getResource("../../splot").toURI)
+  val models = dir.listFiles(new FileFilter() {
+    def accept(f: File) = f.getName endsWith (".xml")
+  })
 
-    for (model <- models) {
-      withClue("Testing %s".format(model.getName)) {
+  for (model <- models)
+    test("Parsing %s".format(model.getName)) {
         parseFile(model.getCanonicalPath)
       }
-    }
-  }
 
 }

@@ -1,7 +1,5 @@
 package gsd.fms
 
-import annotation.tailrec
-
 case class FeatureModel(root: RootNode, constraints: List[Constraint]) {
 
   lazy val ids: List[String] = {
@@ -13,11 +11,27 @@ case class FeatureModel(root: RootNode, constraints: List[Constraint]) {
     }
     _ids(root).distinct
   }
+  
+  lazy val groups: Map[NamedNode, GroupNode] =
+    (dfsWithParent {
+      case (Some(parent: NamedNode), g: GroupNode) =>
+        parent -> g
+    }).toMap
+
+  lazy val features: List[Node] = dfs {
+    case x => x
+  }
 
   lazy val idMap: Map[String, Int] =
     (ids zip (1 to ids.size)).toMap
 
-  def print {
+  lazy val vars: Set[Int] =
+    idMap.values.toSet
+
+  lazy val maxVar: Int =
+    ids.size
+  
+  def print() {
     println("Feature Tree")
     println("------------")
     root.printTree()
@@ -26,6 +40,26 @@ case class FeatureModel(root: RootNode, constraints: List[Constraint]) {
     println("-----------")
     constraints foreach println
   }
+  
+  /**
+   * @param f is a partial function from a parent (None for the root) and
+   *        a child to a result.
+   */
+  def dfsWithParent[A](f: PartialFunction[(Option[Node], Node), A]): List[A] = {
+    val result = new collection.mutable.ListBuffer[A]
+    def dfsNode(parent: Option[Node], child: Node) {
+      if (f.isDefinedAt((parent,child))) result += f((parent,child))
+      for (c <- child.children)  dfsNode(Some(child), c)
+    }
+    dfsNode(None, root)
+    result.toList
+  }
+
+  def dfs[A](f: PartialFunction[Node, A]): List[A] = dfsWithParent(
+    new PartialFunction[(Option[Node], Node), A] {
+        def apply(x: (Option[Node], Node)) = f(x._2)
+        def isDefinedAt(x: (Option[Node], Node)) = f.isDefinedAt(x._2)
+      })
 }
 
 case class Constraint(id: String, expr: Expr) {

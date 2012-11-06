@@ -2,9 +2,15 @@ package gsd.fms
 
 import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
-import java.io.{FileFilter, File}
+import sat.SATBuilder
+import java.util.Arrays
+import org.sat4j.tools.ModelIterator
 
 class CNFSemanticsTest extends FunSuite with ShouldMatchers {
+
+  implicit def toId(s: String): Id =
+    Id(s)
+
   test("Optional features") {
     val fm = FeatureModel(
       RootNode("r", "r", List(
@@ -94,19 +100,72 @@ class CNFSemanticsTest extends FunSuite with ShouldMatchers {
     cnf should contain(Set(-3, 4))
   }
 
-  {
-    // Parse and create CNF for splot models
-    val dir = new File(getClass.getResource("../../").toURI)
-    val models = dir.listFiles(new FileFilter() {
-      def accept(f: File) = f.getName endsWith ("sxfm.xml")
-    })
+  test("Generate all configurations") {
+    val fm = FeatureModel(
+      RootNode("r", "r", List(
+        GroupNode(1, None, List(
+          OptNode("a", "a", Nil),
+          OptNode("b", "b", List(
+            GroupNode(1, None, List(
+              OptNode("c", "c", Nil),
+              OptNode("d", "d", Nil)
+            ))
+          ))
+        ))
+      )), Nil
+    )
 
-    for (model <- models) {
-      test("SPLOT model: %s".format(model.getName)) {
-        val fm = SXFMParser.parseFile(model.getCanonicalPath)
-        CNFSemantics.mkCNF(fm)
-      }
+    val cnf = CNFSemantics.mkCNF(fm)
+    
+    val sat = new SATBuilder(cnf, fm.maxVar)
+
+    val mi = new ModelIterator(sat.solver)
+    //while (mi.isSatisfiable) {
+      // println(Arrays.toString(mi.model()))
+    // }
+  }
+
+  test("Generate all configurations (2)") {
+    val fm = FeatureModel(
+      RootNode("r", "r", List(
+        GroupNode(1, None, List(
+          OptNode("a", "a", Nil),
+          OptNode("b", "b", Nil)
+        )),
+        OptNode("c", "c", Nil)
+      )),
+    List(Constraint("c1", "r" imp ("b" | "c")))
+    )
+
+    val cnf = CNFSemantics.mkCNF(fm)
+
+    val sat = new SATBuilder(cnf, fm.maxVar)
+
+    val mi = new ModelIterator(sat.solver)
+    while (mi.isSatisfiable) {
+      println(Arrays.toString(mi.model()))
     }
   }
+
+
+
+
+
+
+
+//  {
+//    // Parse and create CNF for splot models
+//    val dir = new File(getClass.getResource("../../splot/").toURI)
+//    val models = dir.listFiles(new FileFilter() {
+//      def accept(f: File) = f.getName endsWith (".xml")
+//    })
+//
+//    for (model <- models) {
+//      test("Creating CNF for: %s".format(model.getName)) {
+//        val fm = SXFMParser.parseFile(model.getCanonicalPath)
+//        CNFSemantics.mkCNF(fm)
+//      }
+//    }
+//  }
 
 }

@@ -1,29 +1,9 @@
 package gsd.fms
 
+import dnf.DNFImplBuilder
 import io.Source
 
 object CXTParser {
-
-  case class Context(objects: Array[String],
-                     attributes: Array[String],
-                     matrix: Array[Array[Boolean]]) {
-    override def toString: String = {
-      val sb = new StringBuilder
-      sb append "B\n"
-      sb append objects.size append "\n"
-      sb append attributes.size append "\n"
-      objects foreach (sb.append(_).append("\n"))
-      attributes foreach (sb.append(_).append("\n"))
-      for (row <- matrix) {
-        for (value <- row) {
-          if (value) sb append 'X'
-          else sb append '.'
-        }
-          sb append "\n"
-      }
-      sb.toString()
-    }
-  }
 
   def parse(in: Iterator[String]): Context = {
 
@@ -64,6 +44,15 @@ object CXTParser {
   def main(args: Array[String]) {
     val context = CXTParser.parse(args(0))
     println(context.toString)
+    println()
+    val dnf = context.toDNF
+    dnf foreach (x => println(x.toList.sortBy(math.abs(_)).mkString(",")))
+    
+    // First, identify hierarchy
+    val impls = new DNFImplBuilder(dnf, context.attributes.size)
+    println(impls.implications)
+    
+    // Next, compute or-groups
   }
 
 }
