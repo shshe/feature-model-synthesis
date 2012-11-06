@@ -8,19 +8,14 @@ class DNFImplBuilderTest extends FunSuite {
     new DNFImplBuilder(List(), 1)
   }
 
-  test("implication is found (1)") {
-    val b1 = new DNFImplBuilder(List(Set(-1, 2)), 2)
-    assert(b1.implication(1, 2))
-  }
-
-  test("implication is found (2)") {
-    val b2 = new DNFImplBuilder(List(Set(-1, 2), Set(-1, 2, 3)), 3)
-    assert(b2.implication(1, 2))
-  }
-
-  test("invalid implication is not found") {
-    val b = new DNFImplBuilder(List(Set(-1, 2), Set(2)), 2)
-    assert(!b.implication(1, 2))
+  test("multiple implications are found") {
+    val b = new DNFImplBuilder(
+      List(Set(1), Set(1,2), Set(1,2,3)).negateUnboundedVars(3), 3)
+    println(b.implications)
+    assert(b.implication(2,1))
+    assert(b.implication(3,1))
+    assert(b.implication(3,2))
+    assert(!b.implication(1,2))
   }
 
 }

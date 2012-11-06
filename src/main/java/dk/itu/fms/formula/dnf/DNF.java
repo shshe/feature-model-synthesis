@@ -164,4 +164,5 @@ public class DNF extends Formula {
 		}
 		return new DNF(clauses);
 	}
+
 }

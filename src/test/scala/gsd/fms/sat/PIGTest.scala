@@ -14,5 +14,5 @@ class PIGTest extends FunSuite with ShouldMatchers {
     PIGAdapter.orGroups(cnf, 1, Set(2,3)) should contain (Set(2,3))
     PIGAdapter.orGroups(cnf, 1) should contain (Set(2,3))
   }
-  
+
 }
