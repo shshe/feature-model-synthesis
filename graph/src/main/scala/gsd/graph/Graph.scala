@@ -55,6 +55,3 @@ abstract class Graph[V] protected (val vertices: Set[V], val edges: EdgeMap[V])
   def toParseString(implicit toOrdered: V => Ordered[V]): String
 }
 
-
-
-

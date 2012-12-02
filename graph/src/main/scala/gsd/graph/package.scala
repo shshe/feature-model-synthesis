@@ -1,7 +1,5 @@
 package gsd
 
-import graph.Edge
-
 package object graph {
   
   type Edge[+T] = (T, T)

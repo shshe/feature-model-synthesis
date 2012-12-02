@@ -56,4 +56,8 @@ case class DirectedGraph[V] (vs: Set[V], es: EdgeMap[V])
 
 }
 
+object DirectedGraph {
+  def mkCompleteGraph[V](vs: Set[V]): DirectedGraph[V] =
+    new DirectedGraph[V](vs, (vs zip vs).toMap)
+}
 
