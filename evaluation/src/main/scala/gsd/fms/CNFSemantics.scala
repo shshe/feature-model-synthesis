@@ -75,7 +75,10 @@ object CNFSemantics {
         case Constraint(id, e) => CNFConverter.toCNF(idMap)(e)
       }
 
-    hierarchyClauses ::: orClauses ::: excludeClauses ::: crossTreeConstraints
+    val rootConstraint =
+      Set(idMap(fm.root.id))
+
+    rootConstraint :: hierarchyClauses ::: orClauses ::: excludeClauses ::: crossTreeConstraints
   }
 
 }

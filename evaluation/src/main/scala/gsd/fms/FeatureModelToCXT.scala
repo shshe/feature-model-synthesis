@@ -1,7 +1,8 @@
 package gsd.fms
 
 import gsd.fms.dnf._
-import dk.itu.fms.DNFAdapter
+import java.io.PrintStream
+import org.sat4j.tools.ModelIterator
 
 /**
  * Converts a feature model to it's set of configurations,
@@ -9,13 +10,7 @@ import dk.itu.fms.DNFAdapter
  */
 object FeatureModelToCXT {
 
-  private case class Config(
-    inputFile: String = "",
-    outputFile: String = ""
-  )
-  
   class FeatureModelConverter(fm: FeatureModel) {
-
     lazy val idMap = fm.idMap
 
     lazy val parentMap: Map[Int, Int] = {
@@ -31,6 +26,38 @@ object FeatureModelToCXT {
       }
       fm.root.children foreach _dfs(idMap(fm.root.id))
       tuples.toMap
+    }
+
+    lazy val mandatorySiblings: Map[Int, Set[Int]] = {
+      val tuples = new collection.mutable.HashMap[Int, Set[Int]]()
+      fm.dfs { case n: Node => 
+          val mands = n.children.collect {
+            case MandNode(id,_,_) => idMap(id)
+          }
+          val opts = n.children.collect {
+            case OptNode(id,_,_) => idMap(id)
+          }
+          for (o <- opts ++ mands)
+            tuples += o -> mands.toSet
+      }
+      tuples.toMap withDefaultValue (Set())
+    }
+
+    /**
+     * FIXME not used
+     * A map from a node to its mandatory subfeatures
+     *
+     * FIXME should this also include xor-groups?
+     */
+    lazy val mandatorySubfeatureMap: Map[Int, Set[Int]] = {
+      import collection.mutable._
+      val tuples = new HashMap[Int, Set[Int]]() with MultiMap[Int, Int]
+      fm.dfsWithParent {
+        case (Some(n: NamedNode), m:MandNode) =>
+          tuples.addBinding(idMap(n.id), idMap(m.id))
+      }
+      (tuples mapValues (_.toSet)).toMap withDefaultValue
+        (collection.immutable.Set[Int]())
     }
 
     def pathToRoot(f: Int): List[Int] = parentMap.get(f) match {
@@ -51,9 +78,8 @@ object FeatureModelToCXT {
       ).toSet
 
     def mkHierarchyConfig(f: Int): Set[Int] =
-      pathToRoot(f).toSet
+      pathToRoot(f).toSet ++ mandatorySiblings(f)
 
-    // FIXME mandatory features should not be optional
     lazy val hierarchyConfigs: Set[Set[Int]] =
       (fm.vars map mkHierarchyConfig).negateUnboundedVars(fm.maxVar).toSet
 
@@ -70,14 +96,14 @@ object FeatureModelToCXT {
      * @param configs
      * @return
      */
-    def violatingMandatoryConfigs(configs: Set[Set[Int]]): Set[Set[Int]] =  {
+    def violatingConfigs(configs: Set[Set[Int]]): Set[Set[Int]] =  {
       // Removes configs where a mandatory feature is not present when
       // its parent is present
       val presentToNotPresent: Map[Int, Set[Int]] = (fm.dfsWithParent {
         case (Some(p: NamedNode), MandNode(id,_,_)) =>
           idMap(p.id) -> Set(-idMap(id))
-        case (Some(p: NamedNode), GroupNode(1,_,cs)) =>  
-          idMap(p.id) -> (cs map (c => -idMap(c.id))).toSet
+        // case (Some(p: NamedNode), GroupNode(1,_,cs)) =>
+        //  idMap(p.id) -> (cs map (c => -idMap(c.id))).toSet
       }).toMap
       
       configs filter { config =>
@@ -94,6 +120,28 @@ object FeatureModelToCXT {
 
   }
 
+
+  class AllConfigurationsConverter(fm: FeatureModel) {
+
+    import gsd.fms.sat._
+
+    lazy val configs: Set[Set[Int]] = {
+      val cnf = CNFSemantics.mkCNF(fm)
+      val sat = new SATBuilder(cnf, cnf.vars.size)
+      val mi = new ModelIterator(sat.solver)
+      
+      val configs = new collection.mutable.ListBuffer[Set[Int]]
+      while (mi.isSatisfiable)
+        configs += mi.model().toSet
+      configs.toSet
+    }
+    
+  }
+
+  private case class Config(inputFile: String = "",
+                            out: PrintStream = System.out)
+
+
   def main(args: Array[String]) {
     val parser = new scopt.immutable.OptionParser[Config]("FeatureModelToCXT", "1.0") {
       def options = Seq(
@@ -101,35 +149,28 @@ object FeatureModelToCXT {
           (file: String, c: Config) => c.copy(inputFile = file)
         },
         opt("o", "output", "Output CXT file") {
-          (file: String, c: Config) => c.copy(outputFile = file)
+          (file: String, c: Config) => c.copy(out = new PrintStream(file))
         })
     }
     parser.parse(args, Config()) map { c =>
       // First, convert the feature model to its CNF representation
       val fm = SXFMParser.parseFile(c.inputFile)
       val converter = new FeatureModelConverter(fm)
-      val dnf: Set[Set[Int]] = converter.configs
-      dnf foreach (c => println(c.toList.sortBy(math.abs(_)).mkString(",")))
-
-      val toRemove = converter.violatingMandatoryConfigs(converter.configs)
-      println("Violating configs to remove: " + toRemove)
-
-      println("Implication Graph")
-      val g = new DNFImplBuilder(dnf -- toRemove, fm.ids.size).mkImplicationGraph()
-      println(g)
+      val dnf = converter.configs
+      val remove = converter.violatingConfigs(converter.configs)
       
-      println("Feature Groups")
-      val groups = DNFAdapter.orGroups(converter.groupConfigs)
-      println(groups)
+      val cxt = Context.fromDNF(dnf -- remove, fm.varMap)
+      c.out.println(cxt)
 
-      // Generate using the SAT solver -- does not scale
-      // val cnf = CNFSemantics.mkCNF(fm)
-      // val sat = new SATBuilder(cnf, fm.ids.size)
-
-
-    } getOrElse {
-      // arguments are bad, usage message will have been displayed
-    }
+      println(converter.violatingConfigs(dnf))
+      
+      println()
+      
+      val allConfigs = new AllConfigurationsConverter(fm)
+      val cxt2 = Context.fromDNF(allConfigs.configs, fm.varMap)
+      c.out.println(cxt2)
+      
+    } getOrElse {}
   }
 
 }

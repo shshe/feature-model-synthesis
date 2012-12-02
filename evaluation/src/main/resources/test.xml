@@ -1,0 +1,10 @@
+<feature_model name="Test Model">
+  <feature_tree>
+:r A
+	: B
+		: C
+		:m D
+  </feature_tree>
+</feature_model>
+<!-- vim: noexpandtab
+     -->

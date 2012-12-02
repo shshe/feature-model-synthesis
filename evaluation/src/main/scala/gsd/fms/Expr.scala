@@ -1,6 +1,6 @@
 package gsd.fms
 
-abstract class Expr(protected val precedence: Int) {
+abstract sealed class Expr(protected val precedence: Int) {
   override def toString: String
 
   def unary_! = Not(this)

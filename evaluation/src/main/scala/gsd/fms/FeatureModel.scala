@@ -22,8 +22,21 @@ case class FeatureModel(root: RootNode, constraints: List[Constraint]) {
     case x => x
   }
 
+  lazy val numImplications: Int = {
+    var num = 0
+    def _dfs(child: Node, depth: Int) {
+      num += depth
+      for (c <- child.children)  _dfs(c, depth + 1)
+    }
+    _dfs(root, 0)
+    num
+  }
+
   lazy val idMap: Map[String, Int] =
     (ids zip (1 to ids.size)).toMap
+  
+  lazy val varMap: Map[Int, String] =
+    (idMap map (_.swap)).toMap
 
   lazy val vars: Set[Int] =
     idMap.values.toSet

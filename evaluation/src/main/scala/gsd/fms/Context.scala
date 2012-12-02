@@ -1,12 +1,12 @@
 package gsd.fms
 
+import gsd.fms.dnf._
+
 case class Context(objects: Array[String],
                    attributes: Array[String],
                    matrix: Array[Array[Boolean]]) {
 
   val maxVar = attributes.size
-
-  import gsd.fms.dnf._
 
   override def toString: String = {
     val sb = new StringBuilder
@@ -34,3 +34,26 @@ case class Context(objects: Array[String],
     }
 }
 
+object Context {
+  /**
+   * Assumes negated variables have been added
+   */
+  implicit def fromDNF(dnf: DNF,
+                       attributeMap: Map[Int, String] = Map() withDefault (_.toString)): Context = {
+    val attributes = ((1 to dnf.maxVar) map (attributeMap.apply)).toArray
+
+    val matrix = (dnf map {
+      case config => 
+        val row = new Array[Boolean](dnf.maxVar)
+        config map {
+          case x if x > 0 => row(x-1) = true
+          case x if x < 0 => row(math.abs(x)-1) = false
+          case 0 => sys.error("DNF representation should never contain 0")
+        }
+        row
+    }).toArray
+
+    Context(((1 to matrix.size) map (_.toString)).toArray, attributes, matrix)
+  }
+
+}

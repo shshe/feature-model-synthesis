@@ -38,8 +38,12 @@ object CXTParser {
     Context(objects, attributes, context)
   }
   
-  def parse(file: String): Context = 
-    parse(Source.fromFile(file).getLines())
+  def parse(file: String): Context =  {
+    val source = Source.fromFile(file)
+    val result = parse(source.getLines())
+    source.close()
+    result
+  }
   
   def main(args: Array[String]) {
     val context = CXTParser.parse(args(0))
