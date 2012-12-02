@@ -1,5 +1,7 @@
 package gsd.fms
 
+import dk.itu.fms.DNFOrGroups
+
 package object dnf {
 
   type Term = Set[Int]
@@ -9,7 +11,7 @@ package object dnf {
 
     def addSyntheticRoot: DNF = {
       val newVar = maxVar
-      dnf map (_ + maxVar)
+      dnf map (_ + newVar)
     }
 
     /**
@@ -22,9 +24,15 @@ package object dnf {
       dnf map (x => x ++ (((1 to maxVar).toSet -- x) map (-_)))
 
     def retainVars(vars: Set[Int]): DNF =
-      dnf map { term =>
+      (dnf map { term =>
         term filter (vars contains math.abs(_))
-      } filterNot (_.isEmpty)
+      } filterNot (_.isEmpty)).toSet
+
+
+    // Convenience methods
+    def orGroups: Set[Set[Int]] =
+      DNFOrGroups.orGroups(dnf)
+    
   }
 
 }

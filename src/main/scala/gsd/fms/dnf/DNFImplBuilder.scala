@@ -9,20 +9,16 @@ class DNFImplBuilder(val dnf: DNF, val size: Int) {
   lazy val implications: Seq[(Int, Int)] = 
     for {
         i <- 1 to size
-        j <- 1 to size if implication(i, j)
+        j <- 1 to size if i != j && implication(i, j)
       } yield (i,j)
 
-  def mkImplicationMap(impls: Seq[(Int, Int)]): Map[Int, Set[Int]] =
-    impls groupBy (_._1) mapValues
-      (_ map (_._2) toSet) withDefault (_ => Set.empty[Int])
-
-  def implication(i: Int, j: Int): Boolean = 
+  def implication(i: Int, j: Int): Boolean =
     dnf forall { term => term.contains(-i) || term.contains(j) }
 
-  def mkImplicationGraph(cutoff: Int = size, ignore: Iterable[Int] = Nil): DirectedGraph[Int] =
-    new DirectedGraph[Int](
-      (1 to cutoff).toSet -- ignore, 
-      mkImplicationMap(implications filterNot { case (x,y) => x == y }))
+  lazy val implicationGraph: DirectedGraph[Int] =
+  new DirectedGraph[Int]( (1 to size).toSet,
+    implications groupBy (_._1) mapValues
+      (_ map (_._2) toSet) withDefault (_ => Set.empty[Int]))
 
 }
 
