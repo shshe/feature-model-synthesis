@@ -13,10 +13,10 @@ object GroupConfigsGenerator {
     }).flatten[Set[Int]].toList
   }
 
-  def genExponentialConfigs(mandSize: Int, size: Int = 2): List[Set[Int]] =
+  def genExponentialConfigs(mandSize: Int, size: Int = 2): DNF =
     ((for (i <- 0 until size) yield
       (i*mandSize + 1 until i*mandSize + mandSize + 1).toSet) map
-      (_ + (size*mandSize + 1))).toList
+      (_ + (size*mandSize + 1))).toSet
 
   
   def main(args: Array[String]) {

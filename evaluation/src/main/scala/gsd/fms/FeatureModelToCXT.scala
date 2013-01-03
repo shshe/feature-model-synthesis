@@ -72,7 +72,7 @@ object FeatureModelToCXT {
      * @param children
      * @return
      */
-    def mkXorConfigs(parent: Int, children: List[Int]): Set[Set[Int]] =
+    def mkXorConfigs(parent: Int, children: List[Int]): DNF =
       (for (child <- children) yield
          pathToRoot(child).toSet + parent
       ).toSet
@@ -80,15 +80,15 @@ object FeatureModelToCXT {
     def mkHierarchyConfig(f: Int): Set[Int] =
       pathToRoot(f).toSet ++ mandatorySiblings(f)
 
-    lazy val hierarchyConfigs: Set[Set[Int]] =
-      (fm.vars map mkHierarchyConfig).negateUnboundedVars(fm.maxVar).toSet
+    lazy val hierarchyConfigs: DNF =
+      (fm.vars map mkHierarchyConfig).negateUnboundedVars(fm.maxVar)
 
     // FIXME this overlaps with hierarchy configs - not needed
-    lazy val groupConfigs =
-      (fm.groups flatMap {
+    lazy val groupConfigs: DNF =
+      ((fm.groups flatMap {
         case (parent, GroupNode(_,_,children)) =>
           mkXorConfigs(idMap(parent.id), children map (c => idMap(c.id)))
-      }).negateUnboundedVars(fm.maxVar)
+      }).toSet: DNF).negateUnboundedVars(fm.maxVar)
 
 
     /**

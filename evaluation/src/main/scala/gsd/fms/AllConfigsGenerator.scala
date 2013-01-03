@@ -35,7 +35,7 @@ object AllConfigsGenerator {
         val bdd = s.mkBDD(fm)
         if (bdd.satCount() < c.threshold) {
           val iter = s.allConfigurations(fm, bdd)
-          val dnf = iter.toList
+          val dnf = iter.toSet
           val cxt = Context.fromDNF(dnf, fm.varMap)
 
           val outDir = new File(c.outputDir)

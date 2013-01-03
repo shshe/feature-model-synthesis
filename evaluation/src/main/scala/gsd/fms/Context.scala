@@ -26,7 +26,7 @@ case class Context(objects: Array[String],
   }
 
   def toDNF: DNF =
-    for (i <- 0 until matrix.length) yield {
+    for (i <- (0 until matrix.length).toSet: Set[Int]) yield {
       val row = for (j <- 0 until matrix(i).length) yield
         if (matrix(i)(j)) j+1
         else -(j+1)
