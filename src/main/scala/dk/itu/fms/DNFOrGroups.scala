@@ -1,12 +1,11 @@
 package dk.itu.fms
 
-import formula.dnf.DNFClause
+import formula.Clause
+import formula.dnf.{DefaultDNFSolver, DNFClause, DNF => ITUDNF}
 import gsd.fms.dnf._
 
-import dk.itu.fms.formula.dnf.{DNF => ITUDNF}
-
 import collection.JavaConversions._
-import gsd.graph.DirectedGraph
+import prime.Prime
 
 object DNFOrGroups {
   
@@ -17,18 +16,21 @@ object DNFOrGroups {
     new ITUDNF(dnf map (toITUTerm(_)))
 
   implicit def toTerm(ituTerm: DNFClause): Term =
-    (ituTerm.getLiterals map (_.intValue)).toSet
+    (ituTerm.getLiterals map (_.intValue)).toList
 
-  def orGroups(dnf: DNF): Set[Set[Int]] =
-    ((1 to dnf.maxVar) flatMap 
-      (DNFOrGroups.orGroups(dnf, 
-        DirectedGraph.mkCompleteGraph[Int]((1 to dnf.maxVar).toSet), _))).toSet
+  implicit def toScalaSet(in: Clause): Set[Int] =
+    (in map (_.toInt)).toSet
 
-  def orGroups(dnf: DNF, implGraph: DirectedGraph[Int], parent: Int): Set[Set[Int]] = {
-    val children = implGraph.revEdges(parent)
-    val retained = dnf.retainVars(children + parent)
-    println("Retaining: " + (retained))
-    (retained.getOrGroups(parent) map (_.map(_.toInt).toSet)).toSet
+  // Translated from Nele's DNF
+  def orGroups(dnf: DNF,  parent: Int): Set[Set[Int]] = {
+    // Returns Java sets
+    val primes = new Prime(new DefaultDNFSolver(dnf, parent)).positivePrimes
+    (primes filter
+      (prime => prime.size > 1 && (prime forall (_ > 0))) map
+      (prime => (prime map (_.intValue)).toSet)).toSet
   }
+  
+  def orGroupsNele(dnf: DNF, parent: Int) =
+    dnf.getOrGroups(parent)
   
 }

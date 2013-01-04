@@ -2,14 +2,12 @@ package gsd.fms.modelcompare
 
 import java.io.File
 import de.tud.iai.modelcompare.splot.SxfmContextCreator
-import colibri.lib.{ComparableSet, Relation}
+import colibri.lib.Relation
 
 import gsd.fms.dnf._
-import de.tud.iai.modelcompare.fca.ManyObjectsFCAUtil
 import dk.itu.fms.formula.dnf.{DNFClause, DefaultDNFSolver, DNF => ITUDNF}
 import dk.itu.fms.prime.Prime
 import gsd.graph.DirectedGraph
-import gsd.fms.ImplicationGraph
 
 object GSDSxfmAnalyzer {
 
@@ -44,9 +42,8 @@ object GSDSxfmAnalyzer {
     (new ITUDNF(terms), attrMap)
   }
 
-
   def main(args: Array[String]) {
-    //val file = new File("sxfm/REAL-FM-5.xml") // Thread-Domain
+    //val file = new File("sxfm/REAL-FM-5.xml")
     val file = new File("sxfm/REAL-FM-20.xml") // Thread-Domain
     val contextCreator = new SxfmContextCreator(SxfmContextCreator.OutputType.NAME_ONLY)
 
@@ -92,12 +89,6 @@ object GSDSxfmAnalyzer {
 
     println()
     println("Computing implication graph")
-
-    // val implBuilder = new ImplicationGraph(ituDNF)
-    // val (implications, implicationsTime) = nanoTime(implBuilder.calcImplications() map {
-    //   case Array(i,j) => i.toInt -> j.toInt
-    // })
-
     val (implications, implicationsTime) = nanoTime {
       val results = new collection.mutable.ListBuffer[(Int, Int)]
       for (i <- ituDNF.getVariables) {
@@ -107,8 +98,6 @@ object GSDSxfmAnalyzer {
       }
       results
     }
-
-    println()
     println("Time to compute implications: " + inMs(implicationsTime) + "ms")
     println("Number of implications: " + implications.size)
 
@@ -116,26 +105,22 @@ object GSDSxfmAnalyzer {
         implications  groupBy (_._1) mapValues
           (_ map (_._2) toSet) withDefault (_ => Set.empty[Int]))
 
-    println("Number of vertices (variables): " + implg.vertices.size)
-
-
+    println("Number of vertices in implication graph (variables): " + implg.vertices.size)
 
     //
     // Compute OR-Groups
     // NOTE: AND-groups are not collapsed in the graph
+    import collection.JavaConversions._
 
     var totalGroupTime = 0L
+    val groups = new collection.mutable.ListBuffer[(Int, java.util.Set[java.lang.Integer])]
     for (i <- implg.vertices) {
       //
       // Retain only descendants in the formula
       //
-      // NOTE: This takes a long time
-      // NOTE: time for variable elimination is not included in total group time
       val retainVars = implg.revEdges(i) + i
       val eliminateVars = implg.vertices -- retainVars
 
-      import collection.JavaConversions._
-      println("Calculating feature groups for " + i)
       // Returns Java sets
       val (primes, groupTime) = nanoTime{
         new Prime(
@@ -146,14 +131,15 @@ object GSDSxfmAnalyzer {
       }
       totalGroupTime += groupTime
 
-      // FIXME: is this needed
-      // (primes filter
-      //   (prime => prime.size > 1 && (prime forall (_ > 0))) map
-      //   (prime => (prime map (_.intValue)).toSet)).toSet
+      groups ++= primes filter (_.size > 1) map (i -> _)
     }
 
-    println()
     println("Time to compute groups: " + inMs(totalGroupTime) + "ms")
+
+    val varMap = (attrMap map (_.swap)).toMap
+    for ((parent, group) <- groups)
+      println(varMap(parent) + "->" + (group map (i => varMap(i.toInt))))
+
  }
 
 }

@@ -150,7 +150,7 @@ public class DNF extends Formula {
 	 * @param vars variables to eliminate
 	 * @return returns a DNF not containing the variables specified in parameter vars. 
 	 */
-	public Formula eliminateVariables(Set<Integer> vars) {
+	public DNF eliminateVariables(Set<Integer> vars) {
 		
 		Set<DNFClause> clauses = new HashSet<DNFClause>();
 		for(Clause clause : this){

@@ -4,7 +4,7 @@ version := "1.0"
 
 organization := "ca.uwaterloo.gsd"
 
-scalaVersion := "2.9.1"
+scalaVersion := "2.9.2"
 
 resolvers += "Local Maven Repository" at Path.userHome.asURL + "/.m2/repository"
 

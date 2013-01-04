@@ -1,7 +1,6 @@
 package dk.itu.fms.formula.dnf;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 import dk.itu.fms.formula.Clause;
 import org.sat4j.core.Vec;
@@ -30,33 +29,40 @@ public class DefaultDNFSolver implements DNFSolver {
 	
 	public DefaultDNFSolver(DNF dnf){
 		this.dnf = dnf.getClauses();
-		initSolver();
+		initSolver(new HashSet<Integer>());
 	}
 	
 	public DefaultDNFSolver(DNF dnf, int v) {
-		
-		Set<Clause> clauses = new HashSet<Clause>();
-		//TODO
-		for(Clause clause : dnf){
-			if(!clause.containsLiteral(-v))
-				clauses.add(clause);
-		}
-		
-		this.dnf = new Clause[clauses.size()];
-		
-		int i = 0;
-		for(Clause clause : clauses)
-			this.dnf[i++] = clause;
-		initSolver();
+        this(dnf, v, new HashSet<Integer>());
 	}
+
+    public DefaultDNFSolver(DNF dnf, int v, Set<Integer> eliminate) {
+        Set<Clause> clauses = new HashSet<Clause>();
+
+        for(Clause clause : dnf){
+            if(!clause.containsLiteral(-v))
+                    clauses.add(clause);
+        }
+
+        this.dnf = new Clause[clauses.size()];
+
+        int i = 0;
+        for(Clause clause : clauses)
+            this.dnf[i++] = clause;
+        initSolver(eliminate);
+
+    }
 	
-	private boolean initSolver() {
+	private boolean initSolver(Set<Integer> eliminate) {
+
+
 		solver = SolverFactory.newDefault();
 	    clauses = new Vec();
-	    for(Clause clause : dnf){
+        int x = 0;
+	    for(Clause clause : dnf) {
 	    	VecInt vec = new VecInt();
 	    	for(int i : clause){
-	    		if(i > 0)
+	    		if(i > 0 && !eliminate.contains(i))
 	    			vec.push(Math.abs(i));
 	    	}
 	    	if(vec.isEmpty())

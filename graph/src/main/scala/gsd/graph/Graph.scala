@@ -13,11 +13,8 @@ abstract class Graph[V] protected (val vertices: Set[V], val edges: EdgeMap[V])
     case (x,y) => (vertices contains x) && (y forall (vertices contains))
   }), "Edge contains vertex that is not in this graph!")
 
-  lazy val revEdges: EdgeMap[V] = toMultiMap {
-    edges flatMap {
-      case (src,tars) => tars map { ((_, src)) }
-    }
-  } withDefaultValue Set()
+  lazy val revEdges: EdgeMap[V] =
+    toMultiMap(edges.toStream flatMap { case (src,vs) => vs map ((_, src)) }) withDefaultValue Set()
 
   type This <: Graph[V]
   def New(newVs : Set[V], newEs: EdgeMap[V]) : This
