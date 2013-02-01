@@ -3,7 +3,8 @@ package gsd.graph
 trait Graphviz[T] {
   this: Graph[T] =>
 
-  def toGraphvizString(params: GraphvizParams = GraphvizParams()): String = {
+  def toGraphvizString(varMap: Map[T, _] = Map() withDefault (_.toString),
+                       params: GraphvizParams = GraphvizParams()): String = {
 
     val sb = new StringBuilder
 
@@ -17,7 +18,7 @@ trait Graphviz[T] {
     //Vertices
     for ((id, v) <- fmap.iterator.toList sortWith
       { case ((_,i),(_,j)) => i.toString < j.toString })
-      sb append """%d [label="%s"]""".format(v, id.toString replace ("\"", "\\\"")) append "\n"
+      sb append """%d [label="%s"]""".format(v, varMap(id).toString replace ("\"", "\\\"")) append "\n"
 
     for {
       (src, targets) <- edges.toList sortWith { case ((x,_),(y,_)) => x.toString < y.toString }

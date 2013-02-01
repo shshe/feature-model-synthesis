@@ -3,6 +3,7 @@ package dk.itu.fms.formula.dnf;
 import dk.itu.fms.formula.Clause;
 import dk.itu.fms.formula.Formula;
 import dk.itu.fms.prime.Prime;
+import org.sat4j.specs.ContradictionException;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -105,11 +106,11 @@ public class DNF extends Formula {
 	 * @return a set of clauses corresponding to or-groups of the variable v.	
 	 */
 	public Set<Clause> getOrGroups(int v) {
-		
-		Set<Set<Integer>> primes = new Prime(new DefaultDNFSolver(this, v)).positivePrimes();
+        Set<Set<Integer>> primes = new Prime(new DefaultDNFSolver(this, v)).positivePrimes();
 
 		if(primes == null)
 			return null;
+
 		Set<Clause> result = new HashSet<Clause>();
 		for(Set<Integer> prime : primes){
 			if(prime.size() > 1 && isPositive(prime)){

@@ -45,6 +45,6 @@ case class MandNode(override val id: String,
 
 case class GroupNode(min: Int,
                      max: Option[Int],
-                     private val cs: List[OptNode])
-  extends Node(cs)
+                     members: List[OptNode])
+  extends Node(members)
 

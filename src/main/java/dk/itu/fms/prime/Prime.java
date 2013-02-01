@@ -2,6 +2,8 @@ package dk.itu.fms.prime;
 import dk.itu.fms.formula.dnf.DNFSolver;
 
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -11,6 +13,9 @@ import java.util.Set;
 public class Prime {
 
 	private DNFSolver solver;
+
+    private boolean collectTimes = false;
+    private List<Long> times;
 	
 	/**
 	 * 
@@ -20,6 +25,18 @@ public class Prime {
 	public Prime(DNFSolver solver) {
 		this.solver = solver;
 	}
+
+    public void setCollectTimes(boolean t) {
+        this.collectTimes = t;
+        if (t)
+            this.times = new LinkedList<Long>();
+        else
+            this.times = null;
+    }
+
+    public List<Long> getTimes() {
+        return times;
+    }
 	
 	/**
 	 * 
@@ -29,7 +46,19 @@ public class Prime {
 		// the set of prime implicates
 		Set<Set<Integer>> primes = new HashSet<Set<Integer>>();
 		while(true){
+            long t1 = 0;
+            if (collectTimes)
+                t1 = System.currentTimeMillis();
+
 			Set<Integer> prime = min_prime_implicate();
+
+            long t2 = 0;
+            if (collectTimes) {
+                 t2 = System.currentTimeMillis();
+                times.add(t2 - t1);
+            }
+
+
 	        if (prime == null){
 	        	return primes;
 	        }

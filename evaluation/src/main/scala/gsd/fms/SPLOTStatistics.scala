@@ -5,6 +5,8 @@ import gsd.fms.sat._
 import sat.SATBuilder
 import java.io.{PrintStream, FileFilter, File}
 import net.sf.javabdd.BDD
+import de.tud.iai.modelcompare.splot.{SxfmContextCreator, CxtContextCreator}
+import collection.mutable
 
 object SPLOTStatistics {
   
@@ -16,8 +18,7 @@ object SPLOTStatistics {
     new SATBuilder(cnf, cnf.vars.size)
   }
   
-  def mkBDD(fm: FeatureModel): BDD = {
-    val s = new BDDSemantics
+  def mkBDD(fm: FeatureModel, s: BDDSemantics): BDD = {
     s.mkBDD(fm)
   }
 
@@ -36,46 +37,65 @@ object SPLOTStatistics {
     }).flatten
   }
   
-  private case class Config(stat: Stats = GroupStats,
+  private case class Config(stat: Stats = ConfigStats,
                             out: PrintStream = System.out)
 
   sealed trait Stats {
     def process(out: PrintStream, files: Seq[File])
   }
+
   case object GroupStats extends Stats {
     def process(out: PrintStream, files: Seq[File]) {
-      out.println("name,features,groups,type")
       for (file <- files) {
+        println("Working on " + file.getName + "...")
         val fm = mkFM(file.getCanonicalPath)
-        out.println("%s,%d,%d,%s".format(
-          file.getName,
-          fm.features.size,
-          fm.orGroups.size,
-          "OR-Groups"))
-        out.println("%s,%d,%d,%s".format(
-          file.getName,
-          fm.features.size,
-          fm.xorGroups.size,
-          "XOR-Groups"))
+        val specialGroups = fm.groups.values filter {g =>
+          g.min > 1 || g.max.isDefined && g.max.get != 1 && g.max.get < g.members.size
+        }
+        if (specialGroups.size > 0) specialGroups foreach println
       }
     }
   }
 
   case object ConfigStats extends Stats {
     def process(out: PrintStream, files: Seq[File]) {
-      out.println("name,features,groups,implications,logconfigs,configs")
+      out.println("filename,splotname,features,groups,grouped,implyingsum,logconfigs,configs")
       for (file <- files) {
         println("Working on " + file.getName + "...")
+
+//        val creator = new SxfmContextCreator(SxfmContextCreator.OutputType.NAME_ONLY)
+//        creator.loadFile(file)
+
+
         val fm = mkFM(file.getCanonicalPath)
 
-        val bdd = mkBDD(fm)
+        val s = new BDDSemantics
+        val bdd = mkBDD(fm, s)
+
+        // Compute implications
+        val implying = new mutable.HashMap[Int, mutable.Set[Int]] with mutable.MultiMap[Int, Int]
+        if (fm.vars.size < 100) {
+        for (i <- fm.vars; j <- fm.vars if i != j) {
+          val temp = bdd.id().andWith(s.factory.ithVar(i)).andWith(s.factory.nithVar(j))
+          if (temp.isZero) implying.addBinding(j, i) // i implies j, we add the reverse to the implying map
+          temp.free()
+        }
+        }
+        else {
+          println("Not computing implications since there are more than 100 features")
+        }
+
+        val implyingsum: Int = implying.values.map(_.size).sum
+
         val domain = (fm.vars map (bdd.getFactory.ithVar))
                        .foldLeft(bdd.getFactory.one())(_.andWith(_))
-        out.println("%s,%d,%d,%d,%f,%f".format(
+        out.println("%s,\"%s\",%d,%d,%d,%d,%f,%f".format(
           file.getName,
+          fm.name,
           fm.features.size,
           fm.groups.size,
-          fm.numImplications,
+          fm.grouped.size,
+          implyingsum,
           bdd.logSatCount(domain),
           bdd.satCount(domain)))
         bdd.free()
@@ -89,8 +109,8 @@ object SPLOTStatistics {
       def options = Seq(
         arg("<stat>", "One of: groups, configs") {
           (s: String, c: Config) => s match {
-            case "group"   => c.copy(stat = GroupStats)
             case "configs" => c.copy(stat = ConfigStats)
+            case "groups" => c.copy(stat = GroupStats)
           }
         },
         opt("o", "output", "Output file") {

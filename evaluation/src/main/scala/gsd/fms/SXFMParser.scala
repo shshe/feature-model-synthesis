@@ -15,8 +15,9 @@ object SXFMParser {
     val meta = elem \\ "meta" // FIXME not stored at the moment
     val featureTree = elem \\ "feature_tree"
     val constraints = elem \\ "constraints"
+    val name = (elem \"@name").text
 
-    FeatureModel(parseFeatureTree(featureTree.text),
+    FeatureModel(name, parseFeatureTree(featureTree.text),
       parseConstraints(constraints.text))
   }
 

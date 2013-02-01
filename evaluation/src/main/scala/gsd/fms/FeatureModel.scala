@@ -1,6 +1,6 @@
 package gsd.fms
 
-case class FeatureModel(root: RootNode, constraints: List[Constraint]) {
+case class FeatureModel(name: String, root: RootNode, constraints: List[Constraint]) {
 
   lazy val ids: List[String] = {
     def _ids(n: Node): List[String] = n match {
@@ -11,16 +11,20 @@ case class FeatureModel(root: RootNode, constraints: List[Constraint]) {
     }
     _ids(root).distinct
   }
-  
+
+
   lazy val groups: Map[NamedNode, GroupNode] =
     (dfsWithParent {
       case (Some(parent: NamedNode), g: GroupNode) =>
         parent -> g
     }).toMap
+  lazy val grouped : List[OptNode] =
+    groups.values.toList flatMap (_.members)
 
-  lazy val features: List[Node] = dfs {
-    case x => x
-  }
+  lazy val features: List[Node] = (dfs {
+    case GroupNode(_,_,_) => None
+    case x => Some(x)
+  }).flatten[Node]
 
   lazy val numImplications: Int = {
     var num = 0

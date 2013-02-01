@@ -1,7 +1,7 @@
 package gsd.graph
 
 case class DirectedGraph[V] (vs: Set[V], es: EdgeMap[V])
-  extends Graph[V](vs,es) with BFS[V] with Cliques[V] {
+  extends Graph[V](vs,es) with BFS[V] with Cliques[V] with Graphviz[V] {
 
   type This = DirectedGraph[V]
 

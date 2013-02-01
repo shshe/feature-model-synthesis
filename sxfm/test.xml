@@ -1,0 +1,33 @@
+<!-- This model was created online using SPLOT's Feature Model Editor (http://www.splot-research.org) on Tue, Mar 27, 2012 - 6:12 AM  -->
+<feature_model name="Test 1 - Based on Graph Product Line">
+<feature_tree>
+:r GPL
+	:m Gtp
+		:g [1,1]
+			: directed
+			: undirected
+	:o Weight
+		:g [1,1]
+			: weighted
+			: unweighted
+	:o Search
+		:g [1,1]
+			: BFS
+			: DFS
+	:m Algorithms
+		:g [1,1]
+			: connected
+			: stronglyc
+			: cycle
+			: mstprim
+			: mstkruskal
+			: shortest
+</feature_tree>
+<constraints>
+c1: unweighted or ~mstprim
+c2: ~stronglyc or ~shortest
+</constraints>
+</feature_model>
+<!-- 
+	 vim: noautoindent:noexpandtab:softtabstop=4:tabstop=4:shiftwidth=4
+	 -->

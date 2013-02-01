@@ -21,15 +21,6 @@ object DNFOrGroups {
   implicit def toScalaSet(in: Clause): Set[Int] =
     (in map (_.toInt)).toSet
 
-  // Translated from Nele's DNF
-  def orGroups(dnf: DNF,  parent: Int): Set[Set[Int]] = {
-    // Returns Java sets
-    val primes = new Prime(new DefaultDNFSolver(dnf, parent)).positivePrimes
-    (primes filter
-      (prime => prime.size > 1 && (prime forall (_ > 0))) map
-      (prime => (prime map (_.intValue)).toSet)).toSet
-  }
-  
   def orGroupsNele(dnf: DNF, parent: Int) =
     dnf.getOrGroups(parent)
   
